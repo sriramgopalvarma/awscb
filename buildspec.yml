@@ -39,7 +39,7 @@ phases:
       # 🔥 Create new task definition with updated image
       - echo Updating ECS task definition...
 
-      - TASK_DEF=$(aws ecs describe-task-definition --task-definition my-task --query taskDefinition)
+      - TASK_DEF=$(aws ecs describe-task-definition --task-definition tpapp --query taskDefinition)
 
       - NEW_TASK_DEF=$(echo $TASK_DEF | jq --arg IMAGE "$REPOSITORY_URI:$COMMIT_ID" '
           .containerDefinitions[0].image = $IMAGE
@@ -63,8 +63,8 @@ phases:
       - echo Deploying new task definition...
 
       - aws ecs update-service \
-          --cluster my-cluster \
-          --service my-service \
+          --cluster sriram-test \
+          --service tpapp-service-19lzkfsn \
           --task-definition $NEW_TASK_DEF_ARN
 
 artifacts:
