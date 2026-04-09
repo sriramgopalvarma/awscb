@@ -32,38 +32,30 @@ phases:
       - docker tag $IMAGE_REPO_NAME:$COMMIT_ID $REPOSITORY_URI:$COMMIT_ID
 
   post_build:
-    commands:
-      - echo Pushing image...
-      - docker push $REPOSITORY_URI:$COMMIT_ID
+  commands:
+    - echo Updating ECS task definition...
 
-      # 🔥 Create new task definition with updated image
-      - echo Updating ECS task definition...
+    - TASK_DEF=$(aws ecs describe-task-definition --task-definition tpapp --query taskDefinition)
 
-      - TASK_DEF=$(aws ecs describe-task-definition --task-definition tpapp --query taskDefinition)
+    - |
+      NEW_TASK_DEF=$(echo $TASK_DEF | jq --arg IMAGE "$REPOSITORY_URI:$COMMIT_ID" '
+      .containerDefinitions[0].image = $IMAGE
+      | {
+          family: .family,
+          networkMode: .networkMode,
+          executionRoleArn: .executionRoleArn,
+          taskRoleArn: .taskRoleArn,
+          containerDefinitions: .containerDefinitions,
+          requiresCompatibilities: .requiresCompatibilities,
+          cpu: .cpu,
+          memory: .memory
+      }')
 
-      - NEW_TASK_DEF=$(echo $TASK_DEF | jq --arg IMAGE "$REPOSITORY_URI:$COMMIT_ID" '
-        .containerDefinitions[0].image = $IMAGE
-        | {
-            family: .family,
-            networkMode: .networkMode,
-            executionRoleArn: .executionRoleArn,
-            taskRoleArn: .taskRoleArn,
-            containerDefinitions: .containerDefinitions,
-            requiresCompatibilities: .requiresCompatibilities,
-            cpu: .cpu,
-            memory: .memory
-        }')
+    - echo "$NEW_TASK_DEF" > new-task-def.json
 
-      - echo "$NEW_TASK_DEF" > new-task-def.json
+    - NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://new-task-def.json --query 'taskDefinition.taskDefinitionArn' --output text)
 
-      - NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://new-task-def.json --query 'taskDefinition.taskDefinitionArn' --output text)
-
-      - echo Deploying new task definition...
-
-      - aws ecs update-service \
-          --cluster sriram-test \
-          --service tpapp-service-19lzkfsn \
-          --task-definition $NEW_TASK_DEF_ARN
+    - aws ecs update-service --cluster my-cluster --service my-service --task-definition $NEW_TASK_DEF_ARN
 
 artifacts:
   files:
