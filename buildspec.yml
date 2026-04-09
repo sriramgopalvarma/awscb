@@ -40,7 +40,7 @@ phases:
       - echo Pushing Docker image...
       - docker push $REPOSITORY_URI:$COMMIT_ID
       - echo Creating imagedefinitions.json...
-      - printf '[{"name":"my-container","imageUri":"%s"}]' $REPOSITORY_URI:$COMMIT_ID > imagedefinitions.json
+      - printf '[{"name":"tpapp ","895812755110.dkr.ecr.us-east-1.amazonaws.com/tiny-python-app":"%s"}]' $REPOSITORY_URI:$COMMIT_ID > imagedefinitions.json
 
       - echo "Printing imagedefinitions.json"
       - cat imagedefinitions.json
