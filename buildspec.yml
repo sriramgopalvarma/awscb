@@ -47,11 +47,7 @@ phases:
       - echo "$TASK_DEF" | jq --arg IMAGE "$REPOSITORY_URI:$COMMIT_ID" '.containerDefinitions[0].image = $IMAGE' > new-task-def.json
 
       - echo Registering new task definition...
-      - NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
-          --family $TASK_FAMILY \
-          --cli-input-json file://new-task-def.json \
-          --query 'taskDefinition.taskDefinitionArn' \
-          --output text)
+      - NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --family $TASK_FAMILY --cli-input-json file://new-task-def.json --query 'taskDefinition.taskDefinitionArn' --output text)
 
       - echo Updating ECS service...
       - aws ecs update-service \
