@@ -59,7 +59,7 @@ phases:
       #     --cluster $CLUSTER_NAME \
       #     --service $SERVICE_NAME \
       #     --task-definition $NEW_TASK_DEF_ARN
-      # - echo deployment successfull
+      # - echo deployment successful
 
 # artifacts:
 #   files:
